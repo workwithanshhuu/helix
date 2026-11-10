@@ -4,6 +4,7 @@ How to learn what Helix needs, alongside building it, in ~1 hour of the daily 4 
 
 | Doc | Purpose |
 | --- | --- |
+| [day-01-beginner-guide.md](day-01-beginner-guide.md) | **Start here.** Day 1 from zero: every concept, every file, every command, glossary and self-check |
 | [study-plan.md](study-plan.md) | Week-by-week what to read/watch and which concept doc to master, aligned to the 45-day plan |
 | [reading-list.md](reading-list.md) | Every book, paper, course and codebase, by milestone (★ = must read) |
 | [glossary.md](glossary.md) | Every term used in the docs, one or two lines each |
