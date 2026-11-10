@@ -1,0 +1,24 @@
+# Helix C++ style: Google style, 100 columns (SPEC.md §1). `make format` applies it,
+# `make format-check` (run in CI) fails on any difference.
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++20
+ColumnLimit: 100
+IndentWidth: 2
+DerivePointerAlignment: false
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<[a-z_]+>$'          # C++ standard headers
+    Priority: 2
+  - Regex: '^<.*\.h>'             # C and system headers
+    Priority: 1
+  - Regex: '^<(gtest|gmock|benchmark)/'
+    Priority: 3
+  - Regex: '^"helix/'             # project headers
+    Priority: 4
+  - Regex: '.*'
+    Priority: 5

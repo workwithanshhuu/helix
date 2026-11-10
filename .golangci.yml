@@ -1,0 +1,17 @@
+# golangci-lint v2 configuration (optional locally: `golangci-lint run`).
+# CI enforces gofmt + go vet + the race detector; this adds deeper checks.
+version: "2"
+linters:
+  default: standard
+  enable:
+    - errorlint
+    - gocritic
+    - misspell
+    - revive
+    - unconvert
+    - bodyclose
+    - contextcheck
+formatters:
+  enable:
+    - gofmt
+    - goimports
