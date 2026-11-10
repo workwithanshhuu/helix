@@ -1,0 +1,110 @@
+# Helix CI. Every push and pull request runs:
+#   lint              clang-format, gofmt, go vet, clang-tidy
+#   cpp (x86_64)      release tests + ASan + TSan + UBSan
+#   cpp-arm (arm64)   the same on ARM, whose weaker memory model exposes ordering bugs
+#   go                go test -race on x86_64 and arm64
+#   sanitizer-canary  proves TSan and the Go race detector catch a deliberate race
+# See docs/runbooks/ci.md for what each job guarantees and how to debug failures.
+
+name: ci
+
+on:
+  push:
+    branches: [main, "day-*", "feat/*", "fix/*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CC: clang
+  CXX: clang++
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang clang-format clang-tidy ninja-build cmake
+      - name: Format
+        run: make format-check
+      - name: go vet
+        run: make vet
+      - name: clang-tidy
+        run: make tidy
+
+  cpp:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [test-cpp, asan, tsan, ubsan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang libclang-rt-18-dev ninja-build cmake
+      - name: Lower ASLR entropy for TSan
+        # Ubuntu 24.04 runners use vm.mmap_rnd_bits=32, which makes TSan abort with
+        # "unexpected memory mapping". 28 is the value TSan supports.
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
+      - name: make ${{ matrix.target }}
+        run: make ${{ matrix.target }}
+
+  cpp-arm:
+    # GitHub's arm64 runners are free for public repositories. For a private repo
+    # this job is skipped; run the arm64 checks locally on the Mac (OrbStack is arm64).
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [test-cpp, asan, tsan, ubsan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang libclang-rt-18-dev ninja-build cmake
+      - name: Lower ASLR entropy for TSan
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
+      - name: make ${{ matrix.target }}
+        run: make ${{ matrix.target }}
+
+  go:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        exclude:
+          - os: ${{ github.event.repository.private && 'ubuntu-24.04-arm' || 'none' }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go test
+        run: make test-go
+      - name: go test -race
+        run: make race
+
+  sanitizer-canary:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang libclang-rt-18-dev
+      - name: Lower ASLR entropy for TSan
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
+      - name: Deliberate races must be detected
+        run: make verify-sanitizers

@@ -1,68 +1,46 @@
-# Prerequisites
-*.d
+# Build trees (one per configuration; see Makefile)
+/build/
+/build-*/
+/cmake-build-*/
+Testing/
+CMakeUserPresets.json
 
-# Compiled Object files
-*.slo
-*.lo
+# Compiled artefacts
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-*.so.*
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
 *.a
-*.lib
-
-# Executables
-*.exe
+*.so
+*.so.*
+*.dylib
 *.out
-*.app
+*.exe
 
-# Build directories
-build/
-Build/
-build-*/
+# Go
+/bin/
+*.test
+*.prof
+coverage.out
 
-# CMake generated files
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-install_manifest.txt
+# Benchmarks: raw results are committed deliberately under bench/results/<date>-<name>/;
+# scratch runs go to bench/tmp/
+/bench/tmp/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+.cache/
 compile_commands.json
 
-# Temporary files
-*.tmp
-*.log
-*.bak
-*.swp
+# Personal notes (SPEC.md §1). Durable progress lives in docs/progress/.
+/notes/
 
-# vcpkg
-vcpkg_installed/
+# Local Claude Code settings (shared commands live in .claude/commands/)
+.claude/settings.local.json
 
-# debug information files
-*.dwo
-
-# test output & cache
-Testing/
-.cache/
+# Secrets never belong in the repo
+*.pem
+*.key
+.env
